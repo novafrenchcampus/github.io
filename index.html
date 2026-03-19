@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canada ↔ IST Time Converter</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --soft: #f1f5f9;
+      --accent: #0f172a;
+      --green-bg: #dcfce7;
+      --green-text: #166534;
+      --amber-bg: #fef3c7;
+      --amber-text: #92400e;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      color: var(--muted);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+    }
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      max-width: 820px;
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      padding: 22px;
+    }
+    .card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+    }
+    .search-wrap {
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 17px;
+      outline: none;
+    }
+    .search-input:focus,
+    .inline-input:focus,
+    .select:focus,
+    .date-input:focus,
+    .minute-input:focus {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.15);
+    }
+    .suggestions {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 20;
+      max-height: 320px;
+      overflow-y: auto;
+      display: none;
+    }
+    .suggestion-item {
+      padding: 14px 16px;
+      border: none;
+      width: 100%;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .suggestion-item:hover { background: var(--soft); }
+    .suggestion-main { font-weight: 600; }
+    .suggestion-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .suggestion-type { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
+    .chips {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      background: var(--soft);
+      color: #334155;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 90px 1fr;
+      gap: 18px;
+      margin-top: 22px;
+      align-items: stretch;
+    }
+    .arrow-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .arrow {
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      font-size: 26px;
+      color: var(--muted);
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .zone-badge {
+      background: var(--soft);
+      color: #475569;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .time-card {
+      width: 100%;
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      padding: 18px;
+      background: var(--soft);
+      text-align: left;
+      cursor: pointer;
+    }
+    .time-card:hover { background: #e2e8f0; }
+    .label-sm { font-size: 14px; color: var(--muted); }
+    .big-time {
+      margin-top: 10px;
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+    .edit-box {
+      margin-top: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+    }
+    .edit-box h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: #334155;
+    }
+    .edit-grid {
+      display: grid;
+      grid-template-columns: minmax(180px, 1.2fr) 90px 100px 100px;
+      gap: 10px;
+      align-items: end;
+    }
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .date-input,
+    .select,
+    .minute-input,
+    .inline-input {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
+    }
+    .ampm-toggle {
+      width: 100%;
+      height: 46px;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      background: #111827;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ampm-toggle:hover { opacity: 0.92; }
+    .helper {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .note {
+      margin-top: 18px;
+      padding: 18px;
+      background: var(--soft);
+      border-radius: 18px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .btn {
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 16px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { opacity: 0.95; }
+    .status {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .status.live { background: var(--green-bg); color: var(--green-text); }
+    .status.manual { background: var(--amber-bg); color: var(--amber-text); }
+    .foot {
+      margin-top: 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .arrow-wrap { display: none; }
+    }
+    @media (max-width: 700px) {
+      .container { padding: 16px; }
+      .card { padding: 16px; }
+      .edit-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .edit-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="pill">🕒 Canada → IST Converter</div>
+    <h1>Search any Canadian city or province and compare it with IST</h1>
+    <p class="subtitle">
+      Type a Canadian city or province, see the live current local time and IST side by side, then edit the Canadian time in a simple 12-hour format.
+      You can click the AM/PM button to switch instantly.
+    </p>
+
+    <div class="card">
+      <h2>Find a city or province</h2>
+      <div class="search-wrap">
+        <input id="searchInput" class="search-input" type="text" placeholder="Try Toronto, Vancouver, Alberta, Quebec…" autocomplete="off" />
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+      <div id="chips" class="chips"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="topline">
+          <h2 id="leftTitle" style="margin:0;">Toronto</h2>
+          <div id="leftZoneBadge" class="zone-badge">EDT</div>
+        </div>
+        <button id="timeCard" class="time-card" type="button">
+          <div class="label-sm">Click here, then edit the Canadian time below</div>
+          <div id="leftBigTime" class="big-time"></div>
+        </button>
+
+        <div class="edit-box">
+          <h3 id="editHeading">Editable local date & time (Toronto)</h3>
+          <div class="edit-grid">
+            <div>
+              <label class="field-label" for="dateInput">Date</label>
+              <input id="dateInput" class="date-input" type="date" />
+            </div>
+            <div>
+              <label class="field-label" for="hourSelect">Hour</label>
+              <select id="hourSelect" class="select"></select>
+            </div>
+            <div>
+              <label class="field-label" for="minuteInput">Minute</label>
+              <select id="minuteInput" class="select"></select>
+            </div>
+            <div>
+              <label class="field-label">AM / PM</label>
+              <button id="ampmToggle" class="ampm-toggle" type="button">AM</button>
+            </div>
+          </div>
+          <div class="helper">Change the date, hour, minute, or click AM/PM to switch instantly. IST updates immediately.</div>
+        </div>
+      </div>
+
+      <div class="arrow-wrap">
+        <div class="arrow">↔</div>
+      </div>
+
+      <div class="card">
+        <div class="topline">
+          <h2 style="margin:0;">India Standard Time</h2>
+          <div id="rightZoneBadge" class="zone-badge">IST</div>
+        </div>
+        <div class="time-card" style="cursor:default; border-style:solid;">
+          <div class="label-sm">Automatically converted IST</div>
+          <div id="rightBigTime" class="big-time"></div>
+        </div>
+        <div class="note">
+          This stays linked to the selected Canadian city or province. Daylight saving time is handled automatically by your browser.
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="liveBtn" class="btn" type="button">Use current live time again</button>
+      <div id="modeBadge" class="status live">Live mode</div>
+    </div>
+
+    <div class="foot">
+      <strong>Note:</strong> some provinces and territories span more than one time zone. In this version, a province search uses one default zone based on the capital or most commonly used zone, so the result stays simple and fast.
+    </div>
+  </div>
+
+  <script>
+    const IST_ZONE = "Asia/Kolkata";
+    const PLACES = [
+      { label: "Alberta", type: "Province", subtitle: "Default zone: Edmonton", timeZone: "America/Edmonton", search: ["ab"] },
+      { label: "British Columbia", type: "Province", subtitle: "Default zone: Vancouver", timeZone: "America/Vancouver", search: ["bc", "b.c."] },
+      { label: "Manitoba", type: "Province", subtitle: "Default zone: Winnipeg", timeZone: "America/Winnipeg", search: ["mb"] },
+      { label: "New Brunswick", type: "Province", subtitle: "Default zone: Fredericton", timeZone: "America/Moncton", search: ["nb"] },
+      { label: "Newfoundland and Labrador", type: "Province", subtitle: "Default zone: St. John’s", timeZone: "America/St_Johns", search: ["nl", "n.l.", "newfoundland"] },
+      { label: "Nova Scotia", type: "Province", subtitle: "Default zone: Halifax", timeZone: "America/Halifax", search: ["ns"] },
+      { label: "Ontario", type: "Province", subtitle: "Default zone: Toronto", timeZone: "America/Toronto", search: ["on"] },
+      { label: "Prince Edward Island", type: "Province", subtitle: "Default zone: Charlottetown", timeZone: "America/Halifax", search: ["pei", "pe"] },
+      { label: "Quebec", type: "Province", subtitle: "Default zone: Montreal", timeZone: "America/Toronto", search: ["qc", "quebec", "québec"] },
+      { label: "Saskatchewan", type: "Province", subtitle: "Default zone: Regina", timeZone: "America/Regina", search: ["sk"] },
+      { label: "Northwest Territories", type: "Territory", subtitle: "Default zone: Yellowknife", timeZone: "America/Yellowknife", search: ["nt", "nwt"] },
+      { label: "Nunavut", type: "Territory", subtitle: "Default zone: Iqaluit", timeZone: "America/Iqaluit", search: ["nu"] },
+      { label: "Yukon", type: "Territory", subtitle: "Default zone: Whitehorse", timeZone: "America/Whitehorse", search: ["yt"] },
+      { label: "Toronto", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Ottawa", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Mississauga", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Brampton", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Hamilton", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "London", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Kitchener", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Waterloo", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Windsor", type: "City", subtitle: "Ontario", timeZone: "America/Toronto", search: [] },
+      { label: "Montreal", type: "City", subtitle: "Quebec", timeZone: "America/Toronto", search: [] },
+      { label: "Quebec City", type: "City", subtitle: "Quebec", timeZone: "America/Toronto", search: ["québec city"] },
+      { label: "Laval", type: "City", subtitle: "Quebec", timeZone: "America/Toronto", search: [] },
+      { label: "Gatineau", type: "City", subtitle: "Quebec", timeZone: "America/Toronto", search: [] },
+      { label: "Vancouver", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Surrey", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Burnaby", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Richmond", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Victoria", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Kelowna", type: "City", subtitle: "British Columbia", timeZone: "America/Vancouver", search: [] },
+      { label: "Calgary", type: "City", subtitle: "Alberta", timeZone: "America/Edmonton", search: [] },
+      { label: "Edmonton", type: "City", subtitle: "Alberta", timeZone: "America/Edmonton", search: [] },
+      { label: "Red Deer", type: "City", subtitle: "Alberta", timeZone: "America/Edmonton", search: [] },
+      { label: "Winnipeg", type: "City", subtitle: "Manitoba", timeZone: "America/Winnipeg", search: [] },
+      { label: "Regina", type: "City", subtitle: "Saskatchewan", timeZone: "America/Regina", search: [] },
+      { label: "Saskatoon", type: "City", subtitle: "Saskatchewan", timeZone: "America/Regina", search: [] },
+      { label: "Halifax", type: "City", subtitle: "Nova Scotia", timeZone: "America/Halifax", search: [] },
+      { label: "Moncton", type: "City", subtitle: "New Brunswick", timeZone: "America/Moncton", search: [] },
+      { label: "Fredericton", type: "City", subtitle: "New Brunswick", timeZone: "America/Moncton", search: [] },
+      { label: "Charlottetown", type: "City", subtitle: "Prince Edward Island", timeZone: "America/Halifax", search: [] },
+      { label: "St. John’s", type: "City", subtitle: "Newfoundland and Labrador", timeZone: "America/St_Johns", search: ["st johns", "saint johns"] },
+      { label: "Saint John", type: "City", subtitle: "New Brunswick", timeZone: "America/Moncton", search: [] },
+      { label: "Whitehorse", type: "City", subtitle: "Yukon", timeZone: "America/Whitehorse", search: [] },
+      { label: "Yellowknife", type: "City", subtitle: "Northwest Territories", timeZone: "America/Yellowknife", search: [] },
+      { label: "Iqaluit", type: "City", subtitle: "Nunavut", timeZone: "America/Iqaluit", search: [] },
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsEl = document.getElementById('suggestions');
+    const chipsEl = document.getElementById('chips');
+    const leftTitle = document.getElementById('leftTitle');
+    const leftZoneBadge = document.getElementById('leftZoneBadge');
+    const leftBigTime = document.getElementById('leftBigTime');
+    const rightZoneBadge = document.getElementById('rightZoneBadge');
+    const rightBigTime = document.getElementById('rightBigTime');
+    const editHeading = document.getElementById('editHeading');
+    const dateInput = document.getElementById('dateInput');
+    const hourSelect = document.getElementById('hourSelect');
+    const minuteInput = document.getElementById('minuteInput');
+    const ampmToggle = document.getElementById('ampmToggle');
+    const liveBtn = document.getElementById('liveBtn');
+    const modeBadge = document.getElementById('modeBadge');
+    const timeCard = document.getElementById('timeCard');
+
+    for (let h = 1; h <= 12; h++) {
+      const opt = document.createElement('option');
+      opt.value = String(h).padStart(2, '0');
+      opt.textContent = String(h).padStart(2, '0');
+      hourSelect.appendChild(opt);
+    }
+    for (let m = 0; m < 60; m++) {
+      const opt = document.createElement('option');
+      opt.value = String(m).padStart(2, '0');
+      opt.textContent = String(m).padStart(2, '0');
+      minuteInput.appendChild(opt);
+    }
+
+    let selected = PLACES.find(p => p.label === 'Toronto');
+    let isLiveMode = true;
+    let manualUtcMs = Date.now();
+
+    function normalize(text) {
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[’']/g, '')
+        .trim();
+    }
+
+    function getFormatter(timeZone, opts = {}) {
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        ...opts,
+      });
+    }
+
+    function getParts(dateMs, timeZone) {
+      const parts = getFormatter(timeZone).formatToParts(new Date(dateMs));
+      const out = {};
+      for (const part of parts) {
+        if (part.type !== 'literal') out[part.type] = part.value;
+      }
+      return {
+        year: Number(out.year),
+        month: Number(out.month),
+        day: Number(out.day),
+        hour: Number(out.hour),
+        minute: Number(out.minute),
+        second: Number(out.second),
+      };
+    }
+
+    function toDateValue(parts) {
+      return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+    }
+
+    function get12HourState(dateMs, timeZone) {
+      const p = getParts(dateMs, timeZone);
+      const ampm = p.hour >= 12 ? 'PM' : 'AM';
+      let hour12 = p.hour % 12;
+      if (hour12 === 0) hour12 = 12;
+      return {
+        date: toDateValue(p),
+        hour: String(hour12).padStart(2, '0'),
+        minute: String(p.minute).padStart(2, '0'),
+        ampm,
+      };
+    }
+
+    function formatPretty(dateMs, timeZone) {
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone,
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+        hour12: true,
+      }).format(new Date(dateMs));
+    }
+
+    function zoneLabel(timeZone, dateMs) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        timeZoneName: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).formatToParts(new Date(dateMs));
+      return parts.find(p => p.type === 'timeZoneName')?.value || timeZone;
+    }
+
+    function offsetLabel(timeZone, dateMs) {
+      const label = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        timeZoneName: 'longOffset',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).formatToParts(new Date(dateMs)).find(p => p.type === 'timeZoneName')?.value;
+      return label || 'UTC offset unavailable';
+    }
+
+    function zonedLocalToUtcMs(dateValue, hour12Value, minuteValue, ampm, timeZone) {
+      const match = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return Date.now();
+      let [, y, m, d] = match.map(Number);
+      let hour = Number(hour12Value) % 12;
+      if (ampm === 'PM') hour += 12;
+      const minute = Number(minuteValue);
+
+      const desiredUtcShape = Date.UTC(y, m - 1, d, hour, minute, 0);
+      let guess = desiredUtcShape;
+      for (let i = 0; i < 6; i++) {
+        const seen = getParts(guess, timeZone);
+        const seenUtcShape = Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour, seen.minute, seen.second || 0);
+        const diff = desiredUtcShape - seenUtcShape;
+        guess += diff;
+        if (Math.abs(diff) < 1000) break;
+      }
+      return guess;
+    }
+
+    function getSuggestions(q) {
+      const nq = normalize(q);
+      if (!nq) return PLACES.slice(0, 10);
+      return [...PLACES]
+        .map(place => {
+          const hay = normalize(`${place.label} ${place.type} ${place.subtitle} ${(place.search || []).join(' ')}`);
+          const labelNorm = normalize(place.label);
+          const starts = hay.startsWith(nq) || labelNorm.startsWith(nq);
+          const includes = hay.includes(nq);
+          const score = starts ? 0 : includes ? 1 : 2;
+          return { place, score };
+        })
+        .filter(x => x.score < 2)
+        .sort((a, b) => a.score - b.score || a.place.label.localeCompare(b.place.label))
+        .slice(0, 10)
+        .map(x => x.place);
+    }
+
+    function renderSuggestions() {
+      const items = getSuggestions(searchInput.value);
+      suggestionsEl.innerHTML = '';
+      if (!items.length) {
+        suggestionsEl.style.display = 'none';
+        return;
+      }
+      items.forEach(place => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'suggestion-item';
+        btn.innerHTML = `
+          <div>
+            <div class="suggestion-main">${place.label}</div>
+            <div class="suggestion-sub">${place.type} • ${place.subtitle}</div>
+          </div>
+          <div class="suggestion-type">${place.type}</div>
+        `;
+        btn.addEventListener('click', () => choosePlace(place));
+        suggestionsEl.appendChild(btn);
+      });
+      suggestionsEl.style.display = 'block';
+    }
+
+    function hideSuggestionsSoon() {
+      setTimeout(() => {
+        suggestionsEl.style.display = 'none';
+      }, 140);
+    }
+
+    function setModeBadge() {
+      modeBadge.textContent = isLiveMode ? 'Live mode' : 'Manual edit mode';
+      modeBadge.className = `status ${isLiveMode ? 'live' : 'manual'}`;
+    }
+
+    function syncEditInputs(dateMs) {
+      const state = get12HourState(dateMs, selected.timeZone);
+      dateInput.value = state.date;
+      hourSelect.value = state.hour;
+      minuteInput.value = state.minute;
+      ampmToggle.textContent = state.ampm;
+    }
+
+    function referenceUtcMs() {
+      return isLiveMode ? Date.now() : manualUtcMs;
+    }
+
+    function render() {
+      const refMs = referenceUtcMs();
+      leftTitle.textContent = selected.label;
+      editHeading.textContent = `Editable local date & time (${selected.label})`;
+      leftZoneBadge.textContent = zoneLabel(selected.timeZone, refMs);
+      rightZoneBadge.textContent = zoneLabel(IST_ZONE, refMs);
+      leftBigTime.textContent = formatPretty(refMs, selected.timeZone);
+      rightBigTime.textContent = formatPretty(refMs, IST_ZONE);
+
+      chipsEl.innerHTML = '';
+      [
+        `${selected.label} • ${selected.subtitle}`,
+        selected.timeZone,
+        offsetLabel(selected.timeZone, refMs)
+      ].forEach(text => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = text;
+        chipsEl.appendChild(chip);
+      });
+
+      if (isLiveMode) {
+        syncEditInputs(refMs);
+      }
+      setModeBadge();
+    }
+
+    function applyManualEdit() {
+      if (!dateInput.value) return;
+      isLiveMode = false;
+      manualUtcMs = zonedLocalToUtcMs(dateInput.value, hourSelect.value, minuteInput.value, ampmToggle.textContent, selected.timeZone);
+      render();
+    }
+
+    function choosePlace(place) {
+      selected = place;
+      searchInput.value = place.label;
+      suggestionsEl.style.display = 'none';
+      if (isLiveMode) {
+        render();
+      } else {
+        manualUtcMs = zonedLocalToUtcMs(dateInput.value, hourSelect.value, minuteInput.value, ampmToggle.textContent, selected.timeZone);
+        render();
+      }
+    }
+
+    searchInput.value = selected.label;
+    render();
+    setInterval(() => {
+      if (isLiveMode) render();
+    }, 1000);
+
+    searchInput.addEventListener('input', renderSuggestions);
+    searchInput.addEventListener('focus', renderSuggestions);
+    searchInput.addEventListener('blur', hideSuggestionsSoon);
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const items = getSuggestions(searchInput.value);
+        if (items[0]) choosePlace(items[0]);
+      }
+    });
+
+    dateInput.addEventListener('change', applyManualEdit);
+    hourSelect.addEventListener('change', applyManualEdit);
+    minuteInput.addEventListener('change', applyManualEdit);
+    ampmToggle.addEventListener('click', () => {
+      ampmToggle.textContent = ampmToggle.textContent === 'AM' ? 'PM' : 'AM';
+      applyManualEdit();
+    });
+    liveBtn.addEventListener('click', () => {
+      isLiveMode = true;
+      render();
+    });
+    timeCard.addEventListener('click', () => {
+      isLiveMode = false;
+      setModeBadge();
+    });
+  </script>
+</body>
+</html>
